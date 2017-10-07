@@ -26,8 +26,18 @@ class Image():
 
     def draw_rect(self):
         if roi_is_ready:
-            cv2.rectangle(self.img, left_corner, right_corner, (0, 255, 0), -1)
+            cv2.rectangle(self.img, left_corner, right_corner, (0, 255, 0), 1)
 
+    def cropImage(self):
+        if roi_is_ready:
+            if cropped:
+                global roi_is_ready
+                self.img = self.img[left_corner[1]:right_corner[1], left_corner[0]:right_corner[0]]
+
+    def record(self):
+        if recording:
+            out.write(self.img)
+            print "Ermm... recording?"
 
 def point2pick():
     cv2.setMouseCallback('image', save2points)
@@ -49,8 +59,13 @@ def save2points(event, x, y, flags, param):
 
 image = Image()
 roi_is_ready = False
+recording = False
+cropped = False
 left_corner = (0, 0)
 right_corner = (0, 0)
+
+fourcc = cv2.VideoWriter_fourcc(*'XVID')
+out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 480))
 
 if __name__ == '__main__':
     cv2.namedWindow('image')
@@ -62,7 +77,15 @@ if __name__ == '__main__':
         else:
             image.still()
         image.draw_rect()
+        image.cropImage()
+        image.record()
         cv2.imshow('image', image.img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
+        k = cv2.waitKey(1) & 0xFF
+        if k == ord('r'):
+            recording = not recording
+        if k == ord('c'):
+            cropped = not cropped
+        elif k == ord('q'):
             break
+    out.release()
     cv2.destroyAllWindows()
