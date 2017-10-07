@@ -44,8 +44,8 @@ class Image():
             global frame_num
             if frame_num < 20:
                 frame_num += 1
-                font = cv2.FONT_HERSHEY_SIMPLEX
-                cv2.putText(self.img, 'frame: ' + str(frame_num), (10, 50), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
+                #font = cv2.FONT_HERSHEY_SIMPLEX
+                #cv2.putText(self.img, 'frame: ' + str(frame_num), (10, 50), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
                 self.out.write(self.img)
             else:
                 print "done 20 frames"
