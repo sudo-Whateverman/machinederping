@@ -19,8 +19,7 @@ class Image():
         ret, frame = cap.read()
         if cap.isOpened():
             self.img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(self.img, 'From Webcam', (10, 50), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
+
         else:
             print "Nothing to show up for"   # TODO : change to log
             self.still()
@@ -39,13 +38,28 @@ class Image():
         if recording:
             self.out.write(self.img)
 
+    def record_20_frames(self):
+        global recording_test_data
+        if recording_test_data:
+            global frame_num
+            if frame_num < 20:
+                frame_num += 1
+                font = cv2.FONT_HERSHEY_SIMPLEX
+                cv2.putText(self.img, 'frame: ' + str(frame_num), (10, 50), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
+                self.out.write(self.img)
+            else:
+                print "done 20 frames"
+                recording_test_data = False
+
     def prepare_record(self):
         if self.source == 0:
+            global frame_num
             fourcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')  #
             print self.img.shape[:2]
             (h, w) = self.img.shape[:2]  # dirty hack
             src_time = datetime.datetime.now()
             self.out = cv2.VideoWriter('output' + str(src_time) + '.avi', fourcc, 20.0, (w, h), False)
+            frame_num = 0
 
     def finalize(self):
         #self.cap.release()
@@ -55,6 +69,14 @@ class Image():
     def background_sub(self):
         if background_substract:
             self.img = self.fgbg.apply(self.img)
+
+    def run(self):
+        image.background_sub()
+        image.draw_rect()
+        image.cropImage()
+        image.record()
+        image.record_20_frames()
+
 
 def point2pick():
     cv2.setMouseCallback('image', save2points)
@@ -77,10 +99,12 @@ def save2points(event, x, y, flags, param):
 image = Image()
 roi_is_ready = False
 recording = False
+recording_test_data = False
 cropped = False
 background_substract = False
 left_corner = (0, 0)
 right_corner = (0, 0)
+frame_num = 0
 
 
 
@@ -93,16 +117,17 @@ if __name__ == '__main__':
             image.webcam()
         else:
             image.still()
-        image.background_sub()
-        image.draw_rect()
-        image.cropImage()
-        image.record()
+        image.run()
         cv2.imshow('image', image.img)
         k = cv2.waitKey(1) & 0xFF
         if k == ord('r'):
             if not recording:
                 image.prepare_record()
             recording = not recording
+        if k == ord('t'):
+            if not recording_test_data:
+                image.prepare_record()
+            recording_test_data = not recording_test_data
         elif k == ord('c'):
             cropped = not cropped
         elif k == ord('b'):
