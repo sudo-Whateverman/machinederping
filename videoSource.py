@@ -6,6 +6,7 @@ class Image():
     def __init__(self):
         self.img = None
         self.source = None  # source = 0, 1; 0 is webcam, 1 is still frame
+        self.out = None
 
     def still(self):
         self.source = 1
@@ -40,7 +41,7 @@ class Image():
 
     def prepare_record(self):
         if self.source == 0:
-            fourcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')
+            fourcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')  #
             print self.img.shape[:2]
             (h, w) = self.img.shape[:2]  # dirty hack
             src_time = datetime.datetime.now()
@@ -48,7 +49,8 @@ class Image():
 
     def finalize(self):
         #self.cap.release()
-        self.out.release()
+        if self.out is not None:
+            self.out.release()
 
 def point2pick():
     cv2.setMouseCallback('image', save2points)
@@ -93,7 +95,7 @@ if __name__ == '__main__':
         k = cv2.waitKey(1) & 0xFF
         if k == ord('r'):
             if not recording:
-                image.prepare_record()  # bugged
+                image.prepare_record()
             recording = not recording
         if k == ord('c'):
             cropped = not cropped
