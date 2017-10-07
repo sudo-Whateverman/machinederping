@@ -7,6 +7,7 @@ class Image():
         self.img = None
         self.source = None  # source = 0, 1; 0 is webcam, 1 is still frame
         self.out = None
+        self.fgbg = cv2.createBackgroundSubtractorMOG2()
 
     def still(self):
         self.source = 1
@@ -17,10 +18,9 @@ class Image():
         cap = cv2.VideoCapture(0)
         ret, frame = cap.read()
         if cap.isOpened():
-            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            self.img = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             font = cv2.FONT_HERSHEY_SIMPLEX
-            cv2.putText(gray, 'From Webcam', (10, 50), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
-            self.img = gray
+            cv2.putText(self.img, 'From Webcam', (10, 50), font, 1, (0, 255, 0), 2, cv2.LINE_AA)
         else:
             print "Nothing to show up for"   # TODO : change to log
             self.still()
@@ -52,6 +52,10 @@ class Image():
         if self.out is not None:
             self.out.release()
 
+    def background_sub(self):
+        if background_substract:
+            self.img = self.fgbg.apply(self.img)
+
 def point2pick():
     cv2.setMouseCallback('image', save2points)
 
@@ -74,6 +78,7 @@ image = Image()
 roi_is_ready = False
 recording = False
 cropped = False
+background_substract = False
 left_corner = (0, 0)
 right_corner = (0, 0)
 
@@ -88,6 +93,7 @@ if __name__ == '__main__':
             image.webcam()
         else:
             image.still()
+        image.background_sub()
         image.draw_rect()
         image.cropImage()
         image.record()
@@ -97,8 +103,10 @@ if __name__ == '__main__':
             if not recording:
                 image.prepare_record()
             recording = not recording
-        if k == ord('c'):
+        elif k == ord('c'):
             cropped = not cropped
+        elif k == ord('b'):
+            background_substract = not background_substract
         elif k == ord('q'):
             break
     image.finalize()
