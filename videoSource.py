@@ -1,6 +1,6 @@
 import numpy as np
 import cv2
-
+import datetime
 
 class Image():
     def __init__(self):
@@ -36,8 +36,19 @@ class Image():
 
     def record(self):
         if recording:
-            out.write(self.img)
-            print "Ermm... recording?"
+            self.out.write(self.img)
+
+    def prepare_record(self):
+        if self.source == 0:
+            fourcc = cv2.VideoWriter_fourcc('X', 'V', 'I', 'D')
+            print self.img.shape[:2]
+            (h, w) = self.img.shape[:2]  # dirty hack
+            src_time = datetime.datetime.now()
+            self.out = cv2.VideoWriter('output' + str(src_time) + '.avi', fourcc, 20.0, (w, h), False)
+
+    def finalize(self):
+        #self.cap.release()
+        self.out.release()
 
 def point2pick():
     cv2.setMouseCallback('image', save2points)
@@ -64,8 +75,7 @@ cropped = False
 left_corner = (0, 0)
 right_corner = (0, 0)
 
-fourcc = cv2.VideoWriter_fourcc(*'XVID')
-out = cv2.VideoWriter('output.avi', fourcc, 20.0, (640, 480))
+
 
 if __name__ == '__main__':
     cv2.namedWindow('image')
@@ -82,10 +92,12 @@ if __name__ == '__main__':
         cv2.imshow('image', image.img)
         k = cv2.waitKey(1) & 0xFF
         if k == ord('r'):
+            if not recording:
+                image.prepare_record()  # bugged
             recording = not recording
         if k == ord('c'):
             cropped = not cropped
         elif k == ord('q'):
             break
-    out.release()
+    image.finalize()
     cv2.destroyAllWindows()
