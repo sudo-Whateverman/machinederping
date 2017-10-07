@@ -1,13 +1,19 @@
 import cv2
 
 
+def record_selected_roi():
+    pass
+
+
+def annotate_records():
+    pass
 
 
 def pick_category():
     pass
 
 
-def classify():
+def classify_on_records():
     pass
 
 
